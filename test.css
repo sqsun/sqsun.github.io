@@ -38,8 +38,8 @@ body.wider #layout {margin:20px auto 0; width:1200px;}
 .c3 {width:900px;}
 .c3 h3{font-size:1.3em;color:dimgray}
 
-.c3 p{font-size:13px;text-align: justify;color:#696969}
-.c3 li{font-size:13px;text-align: justify;color:#696969;line-height: 2;}
+.c3 p{font-size:14px;text-align: justify;color:#696969}
+.c3 li{font-size:14px;text-align: justify;color:#696969;line-height: 2;}
 .c3 a{font-weight: normal;text-decoration:none;text-transform:none;}
 .c3 a:hover {text-decoration:none; color:#303030;}
 .c3 h2{color:#grey;}
@@ -54,11 +54,12 @@ body.wider #layout {margin:20px auto 0; width:1200px;}
 .c10 {width:780px;}
 .c11 {width:860px;}
 .c12 {width:940px;}
-.c12 img{margin-top: 20px;margin-left: 20px; border-radius: 100%;}
+.c12 img{margin-top: 20px;margin-left: 20px; border-radius: 100%;font-size: 12px;}
+.c12 p{font-size: 12px;}
 .row1 {margin-top:0px;margin-left:50px}
 
-.c13 p {font-size:13px;color:gray;text-decoration:none; font-family:'Economica', sans-serif;}
-.c13 a {font-size:13px;color:gray;font-weight: normal;text-decoration:none; font-family:'Economica', sans-serif;}
+.c13 p {font-size:10px;color:gray;text-decoration:none; font-family:'Economica', sans-serif;}
+.c13 a {font-size:10px;color:gray;font-weight: normal;text-decoration:none; font-family:'Economica', sans-serif;}
 .c14 a {text-decoration: none;}
 .c14 p {font-size: 10px;}
 .c15 p {font-size:10px;text-align: justify;}
