@@ -106,7 +106,7 @@ body.wider .c14 {width:100%;}
 /* Menu list styles */
 ul.menu {list-style:none; margin:0; padding:10px 0; background-color: white; }
 ul.menu li {list-style:none; font-size:1em; margin:0 0 10px; padding:0 0 0px 0; color:#888; }
-ul.menu li a {font-size:1.3em; font-family:'Economica', sans-serif; font-weight:normal;}
+ul.menu li a {font-size:1.2em; font-family:'Economica', sans-serif; font-weight:normal;}
 ul.menu li a:hover {color:#303030; text-decoration:none; }
 
 /* Additional text classes */
@@ -142,18 +142,4 @@ ul.menu li a:hover {color:#303030; text-decoration:none; }
 .tags div{display: inline;}
 #category{width:500px;text-align:center; height: 500px; border: 0.5px solid #A9A9A9;}
 
-body.freestyle01 {font:100% Tahoma,sans-serif;}
-
-body.freestyle01 h1, body.freestyle01 h2, body.freestyle01  ul.menu li a
-{font-family: 'Dosis', sans-serif; }
-body.freestyle01 p.slogan {font-family: 'Dosis', sans-serif;  margin-top:10px; font-size:1.8em;}
-body.freestyle01 h1 {line-height:1.7em;}
-body.freestyle01 h1 {font-size:2.8em;}
-body.freestyle01 h2 {font-size:1.8em;}
-body.freestyle01 h3 {font-size:1.3em;}
-
-body.light h1 {color:#888;  margin-bottom:0;}
-body.light h1 a:hover {color:#303030;}
-body.light h2 {color:#555;}
-body.light h1, body.light h2, body.light h3 {color:#2a5a9a;}
 
