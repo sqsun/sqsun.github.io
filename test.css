@@ -55,12 +55,12 @@ body.wider #layout {margin:20px auto 0; width:1200px;}
 .c10 {width:780px;}
 .c11 {width:860px;}
 .c12 {width:940px;}
-.c12 img{margin-top: 20px;margin-left: 20px; border-radius: 100%;font-size: 15px;}
-.c12 p{font-size: 15px;}
+.c12 img{margin-top: 20px;margin-left: 20px; border-radius: 100%;font-size: 14px;}
+.c12 p{font-size: 14px;}
 .row1 {margin-top:0px;margin-left:50px}
 
-.c13 p { font-size:15px;color:#3B3B3B;text-decoration:none; }
-.c13 a { font-size:15px;color:#3B3B3B;font-weight: normal;text-decoration:none; }
+.c13 p { font-size:14px;color:#3B3B3B;text-decoration:none; }
+.c13 a { font-size:14px;color:#3B3B3B;font-weight: normal;text-decoration:none; }
 .c14 a {text-decoration: none;}
 .c14 p { font-size:12px;}
 .c15 p { font-size:0.9em;text-align: justify;}
@@ -144,6 +144,7 @@ ul.menu li a:hover {color:#303030; text-decoration:none; }
 .tags {display: inline; width: 1000px;height: 50px;}
 .tags div{display: inline;}
 #category{width:500px;text-align:center; height: 500px; border: 0.5px solid #A9A9A9;}
+
 
 
 
