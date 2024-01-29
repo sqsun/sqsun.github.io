@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="./data/getData.js"></script>
+    <script src="./data/dataSource.js"></script>
+    <script src="./data/geneCatory.js"></script>
+    <script src="./data/fileDirectoryInstructions.js"></script>
+    <!-- axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+    <!-- plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+    <style>
+        .title {
+            margin: 0;
+            padding: 14px;
+            text-align: center;
+            /* 水平偏移量 | 垂直偏移量 | 模糊半径 | 扩展半径 | 阴影颜色 */
+            box-shadow: 10px 5px 20px 0 rgba(0, 0, 0, 0.2);
+            background: linear-gradient(to right, #ffffff, #e1e1e1);
+        }
+
+        .main-box {
+            width: 100%;
+            padding: 20px 20px 10px 20px;
+        }
+
+        .box-content {
+            width: 100%;
+        }
+
+        .text {
+            font-size: 14px;
+        }
+
+        .clearfix:before,
+        .clearfix:after {
+            display: table;
+            content: "";
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .box-card {
+            display: inline-block;
+            width: 49%;
+            height: 550px;
+            vertical-align: top;
+        }
+
+        .item {
+            margin-bottom: 18px;
+            height: 505px;
+            display: flex;
+            align-items: center;
+            /* 垂直居中 */
+            justify-content: center;
+            /* 水平居中 */
+            overflow: auto;
+        }
+
+        .box-card-left {
+            margin-right: 0.5%;
+        }
+
+        .box-card-right {
+            margin-left: 0.5%;
+        }
+
+        .control-title {
+            font-size: 16px;
+            font-weight: 800;
+            margin-right: 12px;
+        }
+
+        .is-show-legend-switch {
+            float: right;
+            padding: 0 20px
+        }
+
+        .is-show-legend-switch>switch {
+            line-height: 100%;
+        }
+
+        /* 媒体查询 */
+        @media screen and (max-width: 1260px) {
+            .box-card {
+                display: block;
+                width: 100%;
+            }
+        }
+
+        .enlarged {
+            transform: scale(1.3) translate(14%, 0);
+            transition: transform 0.3s ease;
+            transform-origin: 0 0;
+            /* 设置变形基点在左上角 */
+            position: sticky;
+            z-index: 100;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root">
+        <div>
+            <h1 class="title">器官：{{ organ }}</h1>
+            <div class="main-box">
+                <div class="box-content">
+                    <el-card style="width: 99%; margin-bottom: 0.5%;" class="clearfix" shadow="always">
+                        <div style="display: flex; justify-content: space-between">
+                            <div style="width: 30%;">
+                                <span class="control-title">Data Type</span>
+                                <el-select v-model="dataType" placeholder="请选择" @change="dataTypeChange">
+                                    <el-option v-for="item in dataTypes" :key="item.value" :label="item.label"
+                                        :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </div>
+                            <div style="width: 30%;">
+                                <span class="control-title">Trait</span>
+                                <el-select v-model="trait" placeholder="请选择" @change="traitChange">
+                                    <el-option v-for="item in traits" :key="item.value" :label="item.label"
+                                        :value="item.value">
+                                    </el-option>
+                                </el-select>
+                            </div>
+                            <div style="width: 30%;" v-if="groups.length !== 1">
+                                <span class="control-title">Group</span>
+                                <el-select v-model="group" placeholder="请选择" @change="groupChange">
+                                    <el-option v-for="item in groups" :key="item.value" :label="item.label"
+                                        :value="item.value" :disabled="item.disabled">
+                                    </el-option>
+                                </el-select>
+                            </div>
+                        </div>
+                    </el-card>
+                    <el-card class="box-card box-card-left" shadow="hover" :class="{ 'enlarged': isEnlarged }">
+                        <div slot="header" class="clearfix">
+                            <span>卡片名称</span>
+                            <el-button style="float: right; padding: 3px 0" type="text" @click.stop="toggleEnlarged">
+                                <i :class="isEnlarged ? 'el-icon-zoom-out' : 'el-icon-zoom-in'"></i>
+                            </el-button>
+                            <div class="is-show-legend-switch">
+                                <span>图例：</span>
+                                <el-switch v-model="isShowLegend" active-color="#13ce66" inactive-color="#ff4949">
+                                </el-switch>
+                            </div>
+                        </div>
+                        <div class="item" v-loading="oneLoading" element-loading-text="拼命加载中"
+                            element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
+                            <div v-if="isShowUmap" style="width: 100%;" v-loading="loading"
+                                element-loading-text="拼命绘制中……" element-loading-spinner="el-icon-loading"
+                                element-loading-background="rgba(0, 0, 0, 0.8)">
+                                <div ref="scatterPlot"></div>
+                            </div>
+                        </div>
+                    </el-card>
+                    <el-card class="box-card box-card-right" shadow="hover">
+                        <div slot="header" class="clearfix">
+                            <span>卡片名称</span>
+                            <el-button style="float: right; padding: 3px 0; color: #0d1318" type="text"
+                                @click="downloadImg(imgUrlTwo)">
+                                <i style="font-size: 20px" class="el-icon-camera-solid"></i>
+                            </el-button>
+                        </div>
+                        <div class="item" v-loading="twoLoading" element-loading-text="拼命加载中"
+                            element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
+                            <el-image class="" :src="imgUrlTwo" :preview-src-list="[imgUrlTwo]">
+                                <div slot="placeholder" class="image-slot">
+                                    加载中<span class="dot">...</span>
+                                </div>
+                            </el-image>
+                        </div>
+                    </el-card>
+                </div>
+            </div>
+            <div class="main-box">
+                <div class="box-content">
+                    <el-card style="width: 99%; margin-bottom: 0.5%;" class="clearfix" shadow="always">
+                        <div style="display: flex; justify-content: space-between">
+                            <div style="width: 100%;">
+                                <span class="control-title">Gene</span>
+                                <el-select v-model="gene" :placeholder="gene" filterable>
+                                    <el-option v-for="item in genes" :key="item" :label="item" :value="item">
+                                    </el-option>
+                                </el-select>
+                            </div>
+                        </div>
+                    </el-card>
+                    <el-card class="box-card box-card-left" shadow="hover">
+                        <div slot="header" class="clearfix">
+                            <span>卡片名称</span>
+                            <el-button style="float: right; padding: 3px 0; color: #0d1318" type="text"
+                                @click="downloadImg(imgUrlTwo)">
+                                <i style="font-size: 20px" class="el-icon-camera-solid"></i>
+                            </el-button>
+                        </div>
+                        <div class="item" v-loading="threeLoading" element-loading-text="拼命加载中"
+                            element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
+                            <el-image :src="imgUrlThree" :preview-src-list="[imgUrlThree]">
+                                <div slot="placeholder" class="image-slot">
+                                    加载中<span class="dot">...</span>
+                                </div>
+                            </el-image>
+                        </div>
+                    </el-card>
+                    <el-card class="box-card box-card-right" shadow="hover">
+                        <div slot="header" class="clearfix">
+                            <span>卡片名称</span>
+                            <el-button style="float: right; padding: 3px 0; color: #0d1318" type="text"
+                                @click="downloadImg(imgUrlTwo)">
+                                <i style="font-size: 20px" class="el-icon-camera-solid"></i>
+                            </el-button>
+                        </div>
+                        <div class="item" v-loading="fourLoading" element-loading-text="拼命加载中"
+                            element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
+                            <el-image :src="imgUrlFour" :preview-src-list="[imgUrlFour]">
+                                <div slot="placeholder" class="image-slot">
+                                    加载中<span class="dot">...</span>
+                                </div>
+                            </el-image>
+                        </div>
+                    </el-card>
+                </div>
+            </div>
+            <div style="margin-bottom: 60px" class="main-box">
+                <el-card style="width: 99%; margin-bottom: 0.5%;" class="clearfix" shadow="always">
+                    <span class="control-title">Data Source</span>
+                </el-card>
+                <div style="width: 99%" class="box-content">
+                    <el-table v-loading="tableLoading" element-loading-text="拼命加载中"
+                        element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0)"
+                        :data="tableData" max-height="200px" border stripe style="width: 100%">
+                        <el-table-column fixed prop="name1" label="System" width="200"></el-table-column>
+                        <el-table-column prop="name2" label="Organ/Tissue" width="200"></el-table-column>
+                        <el-table-column prop="name3" label="Age_group" width="200"></el-table-column>
+                        <el-table-column prop="name4" label="Number of cells" width="160"></el-table-column>
+                        <el-table-column prop="name5" label="Number of samples" width="160"></el-table-column>
+                        <el-table-column prop="name6" label="Number of donors" width="160"
+                            :show-overflow-tooltip="true"></el-table-column>
+                        <el-table-column prop="name7" label="Population" width="200"
+                            :show-overflow-tooltip="true"></el-table-column>
+                        <el-table-column prop="name8" label="Published Date" width="200"
+                            :show-overflow-tooltip="true"></el-table-column>
+                        <el-table-column prop="name9" label="Doi" width="200" :show-overflow-tooltip="true">
+                            <template slot-scope="scope">
+                                <a :href="scope.row.name9" target="_blank">{{ scope.row.name9 }}</a>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="name10" label="Link to database" width="200"
+                            :show-overflow-tooltip="true">
+                            <template slot-scope="scope">
+                                <a :href="scope.row.name10" target="_blank">{{ scope.row.name10 }}</a>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="name11" label="Dataset Name" width="200" :show-overflow-tooltip="true">
+                            <template slot-scope="scope">
+                                <a :href="scope.row.name11" target="_blank">{{ scope.row.name11 }}</a>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        const colors = [
+  'rgba(166, 206, 227, 0.8)',
+  'rgba(31, 120, 180, 0.8)',
+  'rgba(178, 223, 138, 0.8)',
+  'rgba(51, 160, 44, 0.8)',
+  'rgba(241, 154, 153, 0.8)',
+  'rgba(227, 26, 28, 0.8)',
+  'rgba(253, 191, 111, 0.8)',
+  'rgba(255, 127, 0, 0.8)',
+  'rgba(202, 178, 214, 0.8)',
+  'rgba(106, 61, 154, 0.8)',
+  'rgba(255, 255, 153, 0.8)',
+  'rgba(177, 89, 40, 0.8)',
+  'rgba(179, 226, 205, 0.8)',
+  'rgba(253, 205, 172, 0.8)',
+  'rgba(203, 213, 232, 0.8)',
+  'rgba(244, 202, 228, 0.8)',
+  'rgba(27, 158, 119, 0.8)',
+  'rgba(217, 95, 2, 0.8)',
+  'rgba(117, 112, 179, 0.8)',
+  'rgba(231, 41, 138, 0.8)',
+  'rgba(102, 166, 30, 0.8)',
+  'rgba(230, 171, 2, 0.8)',
+  'rgba(166, 118, 29, 0.8)',
+  'rgba(102, 102, 102, 0.8)',
+
+]
+
+        Vue.config.productionTip = false
+        const x = new Vue({
+            el: '#root',
+            data: {
+                isEnlarged: false,
+                organ: '',
+                tableData: [],
+                oneLoading: true,
+                twoLoading: true,
+                threeLoading: true,
+                fourLoading: true,
+                tableLoading: true,
+                isShowUmap: false,
+
+                //需要展示的数据
+                dataType: '',
+                dataTypes: [],
+                trait: '',
+                traits: [],
+                group: '',
+                groups: [],
+                gene: '',
+                genes: [],
+
+                //umap数据
+                isShowLegend: true,
+                umapDataUrl: '',
+                //第二个组件的照片
+                imgUrlTwo: '',
+                //第三个组件的照片
+                imgUrlThree: '',
+                //第四个组件的照片
+                imgUrlFour: '',
+
+                loading: true,
+
+                layoutScatter: {
+                    hovermode: 'closest',
+                    legend: {
+                        bgcolor: 'rgba(119, 114, 114, 0.1)',
+                        font: {
+                            size: 12,
+                            color: '#333333'
+                        },
+                        itemsizing: 'constant',
+                        itemwidth: 20,
+                        y: 0.5,
+                        visible: this.isShowLegend //是否展示图例
+                    },
+                    xaxis: {
+                        title: 'UMAP_1',
+                        showgrid: false,
+                        showarrow: true,
+                        arrowhead: 7,
+                        arrowsize: 1,
+                        arrowwidth: 2,
+                        zeroline: false,
+                        showline: true,
+                    },
+                    yaxis: {
+                        title: 'UMAP_2',
+                        showgrid: false,
+                        showarrow: true,
+                        arrowhead: 7,
+                        arrowsize: 1,
+                        arrowwidth: 2,
+                        zeroline: false,
+                        showline: true,
+                    },
+                    margin: {
+                        t: 28,  // 顶边距
+                        b: 80
+                    },
+                    // with: 500,
+                    // height: 500
+                },
+                configScatter: {
+                    scrollZoom: true,
+                    doubleClick: 'reset+autosize',
+                    // staticPlot: false,
+                    //displayModeBar: false, //是否展示功能框
+                    displaylogo: false,
+                    responsive: true
+                },
+            },
+            watch: {
+                isShowLegend: {
+                    handler(newVal) {
+                        // 当父组件传递的参数 legendVisible 发生变化时，执行操作
+                        this.updateChartLayout();
+                    },
+                },
+                umapDataUrl: {
+                    handler(newVal) {
+                        // this.init()
+                        this.updateChartData(newVal)
+                    }
+                }
+            },
+
+            mounted() {
+                // let data = this.$route.query.organ
+                console.log(window.location.href);
+                let urlString = window.location.href;
+                const url = new URL(urlString);
+                const searchParams = new URLSearchParams(url.search);
+                // 获取名为 "organ" 的参数值
+                const data = searchParams.get("organ");
+                if (!data) {
+                    this.$router.replace({
+                        path: '/analyze/cellmarkers/human'
+                    })
+                    return
+                }
+                this.organ = data
+                this.init()
+            },
+
+            methods: {
+                toggleEnlarged() {
+                    this.isEnlarged = !this.isEnlarged;
+                },
+
+                init() {
+                    //设置要展示的器官可选项
+                    this.setOrganOption().then((res) => {
+                        if (res === 'error') {
+                            alert('Data not uploaded, wait a minute......')
+                            return
+                        }
+                        //设置当前要展示的真正数据
+                        this.setShowData()
+                    })
+                },
+
+                async setOrganOption() {
+                    let organ = this.organ
+                    //需要展示的数据
+                    //设置dataType数据
+                    let dataTypes = getDataTypes(organ)
+                    this.dataTypes = dataTypes
+                    this.dataType = dataTypes[0].value;
+
+                    //设置trait数据
+                    let traits = getTraits(organ)
+                    this.traits = traits
+                    this.trait = traits[0].value
+                    //设置group数据
+
+                    let groups = getGroups(organ)
+                    if (groups.length === 0) {
+                        return 'error'
+                    }
+                    this.groups = groups
+                    this.group = groups.find(obj => obj.disabled !== true).value
+                    //设置gene数据
+                    await getGenes(organ, this.dataType, this.trait).then((genes) => {
+                        if (genes == []) {
+                            return 'error'
+                        }
+                        this.genes = genes
+                        this.gene = genes[0]
+                    })
+                },
+
+                setShowData() {
+                    let self = this;
+                    let organ = this.organ
+                    let dataType = this.dataType
+                    let trait = this.trait
+                    let group = this.group
+                    let gene = this.gene
+
+                    this.$nextTick(() => {
+                        this.$nextTick(() => {
+                            self.umapDataUrl = getUmapDataUrl(organ, dataType, trait, group)
+                            self.isShowUmap = true
+                            self.oneLoading = false
+                        })
+
+                        this.$nextTick(() => {
+                            //第二个组件的照片
+                            self.imgUrlTwo = getImgUrlTwo(organ, dataType, trait, group)
+                            self.twoLoading = false
+                        })
+                        this.$nextTick(() => {
+                            //第三个组件的照片
+                            self.imgUrlThree = getImgUrlThree(organ, dataType, trait, group, gene)
+                            self.threeLoading = false
+                        })
+                        this.$nextTick(() => {
+                            //第四个组件的照片
+                            self.imgUrlFour = getImgUrlFour(organ, dataType, trait, group, gene)
+                            self.fourLoading = false
+                        })
+                        this.$nextTick(() => {
+                            if (dataSource[organ] === undefined || dataSource[organ][group] === undefined) {
+                                self.tableData = []
+                            } else {
+                                self.tableData = dataSource[organ][group]
+                            }
+                            self.tableLoading = false
+                        })
+                    })
+                },
+
+                downloadImg(url) {
+                    alert('版权原因，暂时禁止下载');
+                },
+
+                dataTypeChange(value) {
+                    //TODO 这个目前不会变
+
+                },
+
+                traitChange(value) {
+                    //几乎都会变化
+                    this.setShowData()
+                },
+
+                groupChange(value) {
+                    //几乎都会变化
+                    // this.setShowData()
+
+                    let self = this;
+                    let organ = this.organ
+                    let dataType = this.dataType
+                    let trait = this.trait
+                    let group = this.group
+                    let gene = this.gene
+
+                    this.$nextTick(() => {
+                        self.oneLoading = true
+                        self.umapDataUrl = getUmapDataUrl(organ, dataType, trait, group)
+                        self.oneLoading = false
+                    })
+
+                    this.$nextTick(() => {
+                        //第二个组件的照片
+                        self.twoLoading = true
+                        self.imgUrlTwo = getImgUrlTwo(organ, dataType, trait, group)
+                        self.twoLoading = false
+                    })
+                    this.$nextTick(() => {
+                        //第三个组件的照片
+                        self.threeLoading = true
+                        self.imgUrlThree = getImgUrlThree(organ, dataType, trait, group, gene)
+                        self.threeLoading = false
+                    })
+                    this.$nextTick(() => {
+                        //第四个组件的照片
+                        self.fourLoading = true
+                        self.imgUrlFour = getImgUrlFour(organ, dataType, trait, group, gene)
+                        self.fourLoading = false
+                    })
+                    this.$nextTick(() => {
+                        self.tableLoading = true
+                        if (dataSource[organ] === undefined || dataSource[organ][group] === undefined) {
+                            self.tableData = []
+                        } else {
+                            self.tableData = dataSource[organ][group]
+                        }
+                        self.tableLoading = false
+                    })
+                },
+
+                geneChange(value) {
+                    let organ = this.organ
+                    let dataType = this.dataType
+                    let trait = this.trait
+                    let group = this.group
+                    let gene = value
+
+                    let self = this
+                    self.threeLoading = true
+                    self.fourLoading = true
+                    this.$nextTick(() => {
+                        //第三个组件的照片
+                        self.imgUrlThree = getImgUrlThree(organ, dataType, trait, group, gene)
+                        self.threeLoading = false
+                    })
+                    this.$nextTick(() => {
+                        //第四个组件的照片
+                        self.imgUrlFour = getImgUrlFour(organ, dataType, trait, group, gene)
+                        self.fourLoading = false
+                    })
+                },
+
+                async initUmap() {
+                    //遮罩层开始
+                    this.loading = true
+                    let self = this
+                    let umapData = null
+                    if (this.umapDataUrl === '') {
+                        this.loading = false
+                        return
+                    }
+                    await axios.get(this.umapDataUrl).then(res => {
+                        umapData = res.data
+                    })
+
+                    //准备数据
+                    let data_scatter = this.setDataScatter(umapData);
+
+                    const scatterPlotContainer = this.$refs.scatterPlot;
+                    // 绘制散点图
+                    Plotly.newPlot(scatterPlotContainer, data_scatter, this.layoutScatter, this.configScatter);
+
+                    //TODO 遮罩层结束
+                    this.loading = false
+                },
+
+                async updateChartData(value) {
+                    // 更新 Plotly.js 图表的布局，以改变图例的显示状态
+                    this.loading = true
+                    let newData = null
+                    await axios.get(value).then(res => {
+                        newData = res.data
+                    })
+                    //准备数据
+                    let data_scatter = this.setDataScatter(newData);
+                    Plotly.newPlot(this.$refs.scatterPlot, data_scatter, this.layoutScatter, this.configScatter);
+                    this.loading = false
+                },
+
+                updateChartLayout() {
+                    // 更新 Plotly.js 图表的布局，以改变图例的显示状态
+                    Plotly.update(this.$refs.scatterPlot, null, {
+                        legend: {
+                            bgcolor: 'rgba(119, 114, 114, 0.1)',
+                            font: {
+                                size: 12,
+                                color: '#333333'
+                            },
+                            itemsizing: 'constant',
+                            itemwidth: 20,
+                            y: 0.5,
+                            visible: this.isShowLegend //是否展示图例
+                        },
+                    }, null);
+                },
+
+                setDataScatter(data) {
+                    let firstTwoElements = geneCatory[self.organ]
+                    let introduce
+                    let index = 0
+                    let n = 0
+                    let data_scatter = []
+                    for (let key in data) {
+                        if (!firstTwoElements) {
+                            introduce = 'unkonwn'
+                        } else {
+                            introduce = firstTwoElements.slice(3 * n, 3 * n + 3)
+                        }
+                        n++
+                        const trace = {
+                            // name: key.replace(/.{12}/g, '$&<br>'),
+                            name: key,
+                            x: data[key].map(d => d[0]),
+                            y: data[key].map(d => d[1]),
+                            mode: 'markers',
+                            type: 'scattergl',
+                            marker: { size: 2, color: colors[index++] },
+                            text: data[key].map(d => `UMAP1: ${d[0]}, UMAP2: ${d[1]}` + "<br>Cell Type:" + key + "<br>Markers:" + introduce), // 定义悬停时显示的文本内容
+                            hoverinfo: 'text'
+                        };
+                        data_scatter.push(trace)
+                    }
+
+                    return data_scatter
+                },
+            }
+        })
+    </script>
+</body>
+
+</html>
