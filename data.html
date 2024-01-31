@@ -114,7 +114,7 @@
 <body>
     <div id="root">
         <div>
-            <h1 class="title">器官：{{ organ }}</h1>
+            <h1 class="title">Tissue：{{ organ }}</h1>
             <div class="main-box">
                 <div class="box-content">
                     <el-card style="width: 99%; margin-bottom: 0.5%;" class="clearfix" shadow="always">
@@ -147,20 +147,20 @@
                     </el-card>
                     <el-card class="box-card box-card-left" shadow="hover" :class="{ 'enlarged': isEnlarged }">
                         <div slot="header" class="clearfix">
-                            <span>卡片名称</span>
+                            <span>UMAP</span>
                             <el-button style="float: right; padding: 3px 0" type="text" @click.stop="toggleEnlarged">
                                 <i :class="isEnlarged ? 'el-icon-zoom-out' : 'el-icon-zoom-in'"></i>
                             </el-button>
                             <div class="is-show-legend-switch">
-                                <span>图例：</span>
+                                <span>Legend：</span>
                                 <el-switch v-model="isShowLegend" active-color="#13ce66" inactive-color="#ff4949">
                                 </el-switch>
                             </div>
                         </div>
-                        <div class="item" v-loading="oneLoading" element-loading-text="拼命加载中"
+                        <div class="item" v-loading="oneLoading" element-loading-text="Loading"
                             element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
                             <div v-if="isShowUmap" style="width: 100%;" v-loading="loading"
-                                element-loading-text="拼命绘制中……" element-loading-spinner="el-icon-loading"
+                                element-loading-text="Loading …" element-loading-spinner="el-icon-loading"
                                 element-loading-background="rgba(0, 0, 0, 0.8)">
                                 <div ref="scatterPlot"></div>
                             </div>
@@ -168,17 +168,17 @@
                     </el-card>
                     <el-card class="box-card box-card-right" shadow="hover">
                         <div slot="header" class="clearfix">
-                            <span>卡片名称</span>
+                            <span>Dot plot (marker genes)</span>
                             <el-button style="float: right; padding: 3px 0; color: #0d1318" type="text"
                                 @click="downloadImg(imgUrlTwo)">
                                 <i style="font-size: 20px" class="el-icon-camera-solid"></i>
                             </el-button>
                         </div>
-                        <div class="item" v-loading="twoLoading" element-loading-text="拼命加载中"
+                        <div class="item" v-loading="twoLoading" element-loading-text="Loading"
                             element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
                             <el-image class="" :src="imgUrlTwo" :preview-src-list="[imgUrlTwo]">
                                 <div slot="placeholder" class="image-slot">
-                                    加载中<span class="dot">...</span>
+                                    Loading<span class="dot">...</span>
                                 </div>
                             </el-image>
                         </div>
@@ -190,7 +190,7 @@
                     <el-card style="width: 99%; margin-bottom: 0.5%;" class="clearfix" shadow="always">
                         <div style="display: flex; justify-content: space-between">
                             <div style="width: 100%;">
-                                <span class="control-title">Gene</span>
+                                <span class="control-title">Gene symbols</span>
                                 <el-select v-model="gene" :placeholder="gene" filterable>
                                     <el-option v-for="item in genes" :key="item" :label="item" :value="item">
                                     </el-option>
@@ -200,34 +200,34 @@
                     </el-card>
                     <el-card class="box-card box-card-left" shadow="hover">
                         <div slot="header" class="clearfix">
-                            <span>卡片名称</span>
+                            <span>Feature plot</span>
                             <el-button style="float: right; padding: 3px 0; color: #0d1318" type="text"
                                 @click="downloadImg(imgUrlTwo)">
                                 <i style="font-size: 20px" class="el-icon-camera-solid"></i>
                             </el-button>
                         </div>
-                        <div class="item" v-loading="threeLoading" element-loading-text="拼命加载中"
+                        <div class="item" v-loading="threeLoading" element-loading-text="Loading"
                             element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
                             <el-image :src="imgUrlThree" :preview-src-list="[imgUrlThree]">
                                 <div slot="placeholder" class="image-slot">
-                                    加载中<span class="dot">...</span>
+                                    Loading<span class="dot">...</span>
                                 </div>
                             </el-image>
                         </div>
                     </el-card>
                     <el-card class="box-card box-card-right" shadow="hover">
                         <div slot="header" class="clearfix">
-                            <span>卡片名称</span>
+                            <span>Violin plot</span>
                             <el-button style="float: right; padding: 3px 0; color: #0d1318" type="text"
                                 @click="downloadImg(imgUrlTwo)">
                                 <i style="font-size: 20px" class="el-icon-camera-solid"></i>
                             </el-button>
                         </div>
-                        <div class="item" v-loading="fourLoading" element-loading-text="拼命加载中"
+                        <div class="item" v-loading="fourLoading" element-loading-text="Loading"
                             element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0, 0.8)">
                             <el-image :src="imgUrlFour" :preview-src-list="[imgUrlFour]">
                                 <div slot="placeholder" class="image-slot">
-                                    加载中<span class="dot">...</span>
+                                    Loading<span class="dot">...</span>
                                 </div>
                             </el-image>
                         </div>
@@ -239,7 +239,7 @@
                     <span class="control-title">Data Source</span>
                 </el-card>
                 <div style="width: 99%" class="box-content">
-                    <el-table v-loading="tableLoading" element-loading-text="拼命加载中"
+                    <el-table v-loading="tableLoading" element-loading-text="Loading"
                         element-loading-spinner="el-icon-loading" element-loading-background="rgba(0, 0, 0)"
                         :data="tableData" max-height="200px" border stripe style="width: 100%">
                         <el-table-column fixed prop="name1" label="System" width="200"></el-table-column>
